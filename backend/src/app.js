@@ -58,6 +58,16 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Routes
 app.use('/api/pizzas', pizzaRoutes);
 app.use('/api/orders', orderRoutes);
