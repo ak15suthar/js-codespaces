@@ -32,10 +32,10 @@ npm test            # Run React tests
 ## Architecture
 
 ### Backend Structure
-- **Express.js** server with MongoDB/Mongoose
+- **Express.js** server with PostgreSQL
 - **Route-based organization**: `/api/auth`, `/api/pizzas`, `/api/orders`, `/api/webhook`, `/api/admin`
 - **Middleware**: Authentication (JWT), admin authorization, request logging
-- **Models**: User, Pizza, Order (with comprehensive schema requirements)
+- **Models**: User, Pizza, Order (PostgreSQL-based with comprehensive schema requirements)
 - **Controllers**: Handle business logic for each route group
 - **Services**: Delivery service for external integrations
 
@@ -52,7 +52,7 @@ npm test            # Run React tests
 ### Key Integration Points
 - JWT-based authentication between frontend/backend
 - RESTful API design with proper HTTP status codes
-- MongoDB with Mongoose ODM for data persistence
+- PostgreSQL with custom models for data persistence
 - Webhook endpoint for external delivery status updates
 
 ## Challenge Tasks Overview
@@ -63,8 +63,8 @@ The codebase contains three main implementation challenges:
    - Backend: Query parameter handling for filter, sortOrder, page, limit
    - Frontend: Infinite scroll with Intersection Observer API
 
-2. **Order Model Design** (`backend/src/models/Order.js`)
-   - Comprehensive schema with price snapshots, status transitions, validation
+2. **Order Model Design** (`backend/src/models/Order.pg.js`)
+   - Comprehensive PostgreSQL schema with price snapshots, status transitions, validation
    - Multi-level test suite evaluating implementation from Junior to Expert level
 
 3. **Webhook Implementation** (`webhookController.js`)
@@ -73,7 +73,7 @@ The codebase contains three main implementation challenges:
 
 ## Testing Strategy
 
-- **Backend**: Jest with MongoDB Memory Server for isolated testing
+- **Backend**: Jest with PostgreSQL for testing
 - **Order Model Tests**: 5-level evaluation system (50% to 95%+ scoring)
 - **Test Files**: Located in `backend/tests/` directory
 - **Coverage**: Configured to exclude `app.js` and migration files
@@ -90,7 +90,7 @@ The codebase contains three main implementation challenges:
 ## Environment Setup
 
 Both frontend and backend require `.env` files:
-- Backend: `MONGO_URI`, `PORT`, `JWT_SECRET`
+- Backend: `DATABASE_URL`, `POSTGRES_*`, `PORT`, `JWT_SECRET`
 - Frontend: `REACT_APP_API_URL`
 
 Default admin credentials: `admin@admin.com` / `password123`

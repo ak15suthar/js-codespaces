@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-const mongoose = require('mongoose');
 
 // PostgreSQL connection pool
 const pgPool = new Pool({
@@ -14,42 +13,15 @@ pgPool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client', err);
 });
 
-// MongoDB connection (fallback for compatibility)
-const connectMongoDB = async () => {
-  try {
-    if (process.env.MONGO_URI) {
-      await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-      console.log('MongoDB Connected (Fallback)');
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('MongoDB Connection Error:', error.message);
-    return false;
-  }
-};
-
 // Main database connection function
 const connectDB = async () => {
   try {
-    // Try PostgreSQL first
     const client = await pgPool.connect();
     console.log('PostgreSQL Connected Successfully');
     client.release();
     return { type: 'postgresql', connection: pgPool };
-  } catch (pgError) {
-    console.error('PostgreSQL Connection Error:', pgError.message);
-    
-    // Fallback to MongoDB if PostgreSQL fails
-    const mongoConnected = await connectMongoDB();
-    if (mongoConnected) {
-      return { type: 'mongodb', connection: mongoose.connection };
-    }
-    
-    console.error('Failed to connect to any database');
+  } catch (error) {
+    console.error('PostgreSQL Connection Error:', error.message);
     process.exit(1);
   }
 };
@@ -77,6 +49,5 @@ module.exports = {
   connectDB, 
   pgPool, 
   query, 
-  getClient,
-  mongoose 
+  getClient
 };

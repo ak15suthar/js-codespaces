@@ -1,22 +1,11 @@
-// Model selector - automatically chooses between PostgreSQL and MongoDB models
-const usePostgreSQL = process.env.DATABASE_URL || process.env.POSTGRES_HOST;
+// PostgreSQL-only models
+const User = require('./User.pg');
+const Pizza = require('./Pizza.pg'); 
+const Order = require('./Order.pg');
 
-// Select the appropriate models based on database configuration
-const User = usePostgreSQL 
-  ? require('./User.pg') 
-  : require('./User');
-
-const Pizza = usePostgreSQL 
-  ? require('./Pizza.pg') 
-  : require('./Pizza');
-
-const Order = usePostgreSQL 
-  ? require('./Order.pg') 
-  : require('./Order');
-
-// Log which database models are being used
+// Log that we're using PostgreSQL models
 if (process.env.NODE_ENV === 'development') {
-  console.log(`Using ${usePostgreSQL ? 'PostgreSQL' : 'MongoDB'} models`);
+  console.log('Using PostgreSQL models');
 }
 
 module.exports = {
