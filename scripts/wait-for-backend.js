@@ -3,7 +3,7 @@
 const http = require('http');
 const url = require('url');
 
-const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
 const MAX_RETRIES = 30; // 30 seconds timeout
 const RETRY_INTERVAL = 1000; // 1 second between retries
 
