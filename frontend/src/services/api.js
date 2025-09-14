@@ -1,4 +1,16 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Dynamic API URL constructor with Codespaces support
+const getApiUrl = () => {
+  // Check if running in Codespaces environment
+  if (process.env.REACT_APP_CODESPACES === 'true' && process.env.REACT_APP_CODESPACE_NAME) {
+    const domain = process.env.REACT_APP_GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || 'app.github.dev';
+    return `https://${process.env.REACT_APP_CODESPACE_NAME}-8081.${domain}/api`;
+  }
+
+  // Use environment variable or fallback to localhost
+  return process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+};
+
+const API_URL = getApiUrl();
 
 const handleResponse = async (response) => {
   if (!response.ok) {
