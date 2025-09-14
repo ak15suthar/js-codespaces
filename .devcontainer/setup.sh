@@ -22,6 +22,7 @@ NODE_ENV=development
 PORT=8081
 DATABASE_URL=postgresql://dev:dev@postgres:5432/app
 JWT_SECRET=devsecret
+CODESPACES=true
 EOF
 
   # Frontend environment with dynamic Codespaces URLs

@@ -12,50 +12,30 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration for Codespaces and local development
+// CORS configuration following go-js pattern
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      process.env.CORS_ORIGIN,
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000'
-    ];
-    
-    // In Codespaces, also allow the dynamic URLs
-    if (process.env.IS_CODESPACES === 'true' && process.env.CODESPACE_NAME) {
-      const codespacePattern = new RegExp(`^https://${process.env.CODESPACE_NAME}-.+\\.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || 'preview.app.github.dev'}$`);
-      if (codespacePattern.test(origin)) {
-        return callback(null, true);
-      }
-    }
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      // In development, allow all origins
-      if (process.env.NODE_ENV === 'development') {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  },
-  credentials: true,
+  origin: process.env.CODESPACES === 'true' ? true : [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001'
+  ],
+  credentials: process.env.CODESPACES === 'true' ? false : true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Length', 'X-Request-Id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Request-Id'],
+  maxAge: process.env.CODESPACES === 'true' ? 3600 : 300
 };
 
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger);
+
+// Global OPTIONS handler for preflight requests (following go-js pattern)
+app.options('*', (req, res) => {
+  res.status(204).send();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -85,7 +65,7 @@ connectDB()
     console.log(`Connected to ${dbInfo.type} database`);
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      if (process.env.IS_CODESPACES === 'true') {
+      if (process.env.CODESPACES === 'true') {
         console.log(`Codespaces detected - API available at: https://${process.env.CODESPACE_NAME}-${PORT}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`);
       }
     });
