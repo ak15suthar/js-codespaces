@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 
 /**
  * Middleware to verify admin access
@@ -11,32 +11,32 @@ const User = require('../models/User');
  */
 module.exports = async function admin(req, res, next) {
   try {
-    const token = req.header('Authorization');
-    
+    const token = req.header("Authorization");
+
     if (!token) {
-      return res.status(401).json({ message: 'No token provided' });
+      return res.status(401).json({ message: "No token provided" });
     }
 
-    if (!token.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Invalid token format' });
+    if (!token.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Invalid token format" });
     }
 
-    const tokenValue = token.replace('Bearer ', '');
-    
+    const tokenValue = token.replace("Bearer ", "");
+
     const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET);
-    
+
     const user = await User.findById(decoded.userId);
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: "User not found" });
     }
 
-    if (user.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required' });
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Token verification failed' });
+    return res.status(401).json({ message: "Token verification failed" });
   }
 };
