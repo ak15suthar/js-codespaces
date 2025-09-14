@@ -14,7 +14,7 @@
     "feat-3:test": "jest tests/webhook.controller.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "webhook:test": "curl -X POST http://localhost:5000/api/webhook/delivery-update -H \"Content-Type: application/json\" -d '{\"orderId\":\"REPLACE_WITH_ORDER_ID\",\"status\":\"confirmed\",\"estimatedDeliveryTime\":\"2024-03-15T18:30:00Z\",\"deliveryNotes\":\"Order confirmed\",\"timestamp\":\"2024-03-15T17:45:00Z\"}'"
+    "webhook:test": "curl -X POST http://localhost:8081/api/webhook/delivery-update -H \"Content-Type: application/json\" -d '{\"orderId\":\"REPLACE_WITH_ORDER_ID\",\"status\":\"confirmed\",\"estimatedDeliveryTime\":\"2024-03-15T18:30:00Z\",\"deliveryNotes\":\"Order confirmed\",\"timestamp\":\"2024-03-15T17:45:00Z\"}'"
   },
   "dependencies": {
     "axios": "^1.10.0",

@@ -26,10 +26,10 @@ services:
       NODE_ENV: development
       DATABASE_URL: postgresql://dev:dev@postgres:5432/app
       JWT_SECRET: devsecret
-      PORT: 5000
+      PORT: 8081
     ports:
       - "3000:3000"
-      - "5000:5000"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
