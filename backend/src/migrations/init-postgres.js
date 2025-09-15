@@ -96,6 +96,17 @@ const initDatabase = async () => {
       );
       console.log('✅ Admin user created (admin@admin.com / password123)');
     }
+
+    // Check if regular user exists
+    const userCheck = await query('SELECT * FROM users WHERE email = $1', ['user@user.com']);
+    if (userCheck.rows.length === 0) {
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      await query(
+        'INSERT INTO users (name, email, address, password, role) VALUES ($1, $2, $3, $4, $5)',
+        ['Regular User', 'user@user.com', '456 User Avenue', hashedPassword, 'user']
+      );
+      console.log('✅ Regular user created (user@user.com / password123)');
+    }
     
     // Check if pizzas exist
     const pizzaCheck = await query('SELECT COUNT(*) FROM pizzas');
