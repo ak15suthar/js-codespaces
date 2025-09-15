@@ -18,39 +18,44 @@ Welcome to the Pizza Shop Challenge! This is a full-stack application where you'
 
 <summary><i>Open instructions</i></summary>
 
-### 1. Connect Mongo DB
-
-![MongoDB Connection](https://juyrycyjglwfsllqrgpi.supabase.co/storage/v1/object/public/coding-challenges-files//mong-connection.jpg)
-
-1.  Click on the mongo db extension
-2.  Once the extension is opened, click the connect button.
-3.  Enter the connection string `mongodb://pizzauser:pizzapass@mongo-db:27017/testdb?authSource=testdb` in the connection bar at the top.
-
-### 2. Start Development Servers
+### 1. Install Dependencies
 
 ```bash
-# Terminal 1 - Backend
-cd backend
+# Install all dependencies (root, backend, and frontend)
+npm run install:all
+```
+
+### 2. Initialize Database
+
+```bash
+# Initialize PostgreSQL database with tables and seed data
+npm run db:init
+```
+
+### 3. Start Development Servers
+
+```bash
+# Start both backend and frontend servers
 npm run dev
 
+# Or start them separately:
+# Terminal 1 - Backend
+npm run dev:backend
+
 # Terminal 2 - Frontend
-cd frontend
-npm start
+npm run dev:frontend
 ```
 
 #### **Login Credentials**
 
-**User Account:**
-
-- Email: `user@example.com`
-- Password: `test1234`
-- Role: Regular user (can place orders, view order history)
-
 **Admin Account:**
 
-- Email: `admin@example.com`
-- Password: `test1234`
+- Email: `admin@admin.com`
+- Password: `password123`
 - Role: Administrator (can manage pizzas, view all orders, access admin dashboard)
+
+**Note:** Regular user accounts can be created through the signup process on the frontend.
+
 </details>
 
 ---
@@ -367,14 +372,7 @@ const orderSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: [
-        "pending",
-        "confirmed",
-        "preparing",
-        "out_for_delivery",
-        "delivered",
-        "cancelled",
-      ],
+      enum: ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
       default: "pending",
       index: true,
     },

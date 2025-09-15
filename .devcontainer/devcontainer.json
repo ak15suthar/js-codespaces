@@ -23,7 +23,8 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss",
-        "github.copilot"
+        "github.copilot",
+        "cweijan.vscode-mysql-client2"
     ],
     "postCreateCommand": ".devcontainer/setup.sh",
     "settings": {
