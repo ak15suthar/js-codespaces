@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import { useCart } from "./CartContext";
 import FilterButton from "./FilterButton";
+import { pizzaAPI } from "../services/api";
 
 // TODO: CANDIDATE TASK - Implement filtering, sorting, and infinite scroll
 //
@@ -29,11 +30,10 @@ function PizzaList() {
   useEffect(() => {
     const fetchPizzas = async () => {
       try {
-        let url = `${process.env.REACT_APP_API_URL}/pizzas`;
-        const res = await fetch(url);
-        const data = await res.json();
+        const data = await pizzaAPI.getAll();
         setPizzas(data);
       } catch (e) {
+        console.error('Error fetching pizzas:', e);
         setPizzas([]);
       }
     };
