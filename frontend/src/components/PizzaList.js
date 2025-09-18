@@ -20,28 +20,90 @@ import { pizzaAPI } from "../services/api";
 // - Loading spinners
 // - Error handling
 
+const SORT_OPT = {
+  default: {sortBy: 'createdAt', sortOrder:'desc', label: 'Default'},
+  price_asc: {sortBy: 'price', sortOrder:'asc', label: 'Price: low to high'},
+  price_desc: {sortBy: 'price', sortOrder:'desc', label: 'Price: high to low'}
+}
+
 function PizzaList() {
   const { cart, addToCart } = useCart();
   const [pizzas, setPizzas] = useState([]);
-
+  const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [limit] = useState(10);
+  const [page,setPage] = useState(1);
+  const [sortKey, setSortKey] = useState('default');
+  const [hasNext, setHasNext] = useState(true);
   // TODO: Add state for filters, sorting, pagination, loading, etc.
+
+  const createURL = (pageToFetch = 1) => {
+    const params = new URLSearchParams();
+    params.set('page',pageToFetch);
+    params.set('limit', limit);
+    const sortOperator = SORT_OPT[sortKey];
+    params.set('sortBy', sortOperator.sortBy);
+    params.set('sortOrder', sortOperator.sortOrder);
+    if(filter === 'veg') params.set('veg',true);
+    if(filter === 'nonveg') params.set('veg',false);
+    return pizzaAPI.getAllWithQuery(params.toString());
+  }
+
+  const fetchPage = useCallback(
+   async(pageTo = 1, replace = false) =>{
+    if(inFlightRef.current) return;
+    inFlightRef.current = true;
+    setLoading(true);
+    try {
+      const res = await fetch(createURL(pageTo));
+      if(!res.ok) throw new Error('API err');
+      const json = res.json();
+      const newP = Array.isArray(json.pizzas) ? json.pizzas : [];
+      setPizzas((prev) => (replace ? newP : [...prev, ...newP]));
+      setPage(json.pagination.currentPage || pageTo);
+      setHasNext(Boolean(json.pagination.hasNextPage))
+    } catch (error) {
+      console.error('err in fetching...');
+    } finally{
+      setLoading(false);
+      inFlightRef.current = false;
+    }
+   },[filter,sortKey,limit] 
+  );
 
   // TODO: Replace this basic fetch with comprehensive filtering/sorting/pagination
   useEffect(() => {
-    const fetchPizzas = async () => {
-      try {
-        const data = await pizzaAPI.getAll();
-        setPizzas(data);
-      } catch (e) {
-        console.error('Error fetching pizzas:', e);
-        setPizzas([]);
-      }
-    };
-    fetchPizzas();
-  }, []);
+    if(observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(
+      (ent) =>{
+        ent.forEach((e) => {
+          if(e.isIntersecting && hasNext && !loading){
+            fetchPage(page + 1,false);
+          }
+        })
+      }  
+    )
+    // const fetchPizzas = async () => {
+    //   try {
+    //     const data = await pizzaAPI.getAll();
+    //     setPizzas(data);
+    //   } catch (e) {
+    //     console.error('Error fetching pizzas:', e);
+    //     setPizzas([]);
+    //   }
+    // };
+    // fetchPizzas();
+  }, [page, hasNext, loading, fetchPage]);
 
   // TODO: Implement fetchPizzas with query parameters
 
+  const handleFilterChange = (v) =>{
+    setFilter(v);
+  }
+
+  const handleSortChange = (v) =>{
+    setSortKey(v.target.value);
+  }
   return (
     <div className="max-w-2xl mx-auto">
       {/* TODO: CANDIDATE TASK - Make these controls interactive */}
@@ -54,20 +116,23 @@ function PizzaList() {
       <div className="flex justify-between mb-6 gap-4 flex-wrap items-center">
         <div className="flex gap-2 mb-2 sm:mb-0">
           {/* TODO: Make filter buttons interactive */}
-          <FilterButton text="All" active={true} />
-          <FilterButton text="Veg" active={false} />
-          <FilterButton text="Non-Veg" active={false} />
+          <FilterButton text="All" style={filter === 'all' ? {fontWeight: 'bold'} : {}} onClick={() => handleFilterChange('all')}/>
+          <FilterButton text="Veg" style={filter === 'veg' ? {fontWeight: 'bold'} : {}} onClick={() => handleFilterChange('veg')} />
+          <FilterButton text="Non-Veg" style={filter === 'nonveg' ? {fontWeight: 'bold'} : {}} onClick={() => handleFilterChange('nonveg')}/>
         </div>
 
         <div className="ml-4">
           {/* TODO: Make sort dropdown interactive */}
           <select
             className="px-4 py-2 rounded-full border font-semibold text-gray-700 bg-white shadow focus:outline-none cursor-default"
-            value="default"
+            value={sortKey} onChange={handleSortChange}
           >
-            <option value="default">Sort: Default</option>
+            {Object.entries(SORT_OPT).map(([key, opt])=>{
+              <option key={key} value={key}>{opt.label}</option>
+            })}
+            {/* <option value="default">Sort: Default</option>
             <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
+            <option value="price-desc">Price: High to Low</option> */}
           </select>
         </div>
       </div>
@@ -141,11 +206,17 @@ function PizzaList() {
       </div>
 
       {/* TODO: Add loading state for infinite scroll */}
-      {/* {loading && (
+      {loading && (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600">Loading</div>
         </div>
-      )} */}
+      )}
+
+      {!loading && pizzas.length === 0 && (
+        <div className="flex justify-center py-8">
+          no more results
+        </div>
+      )}
 
       {/* TODO: Add "no more results" message */}
       {/* {!hasMore && pizzas.length > 0 && (
@@ -155,11 +226,11 @@ function PizzaList() {
       )} */}
 
       {/* TODO: Add empty state */}
-      {/* {!loading && pizzas.length === 0 && (
+      {!hasNext && pizzas.length > 0 && (
         <div className="text-center py-8 text-gray-500">
           No pizzas found
         </div>
-      )} */}
+      )}
     </div>
   );
 }

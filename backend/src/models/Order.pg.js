@@ -32,6 +32,20 @@ class Order {
     return transitions[currentStatus]?.includes(newStatus) || false;
   }
 
+  static calculateEstimatedDelivery(item){
+    const baseMin =20;
+    const perItemMin = 5;
+    const totalQty = (item || []).reduce((s, it) => s + (it.quantity || 0),0);
+    const estMin = baseMin + perItemMin + totalQty;
+    const estMinDt = new Date(Date.now() + estMin * 60 * 1000);
+    return estMinDt;
+  }
+
+  static canBeModified(status){
+    const modifiable = new Set(['pending','confirmed']);
+    return modifiable.has(status);
+  }
+
   // Create a new order with transaction
   static async create(orderData) {
     const client = await getClient();
@@ -334,7 +348,7 @@ const createTables = async () => {
     CREATE TABLE IF NOT EXISTS order_items (
       id SERIAL PRIMARY KEY,
       order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
-      pizza_id INTEGER,
+      pizza_id INTEGER NOT NULL,
       pizza_name VARCHAR(255) NOT NULL,
       quantity INTEGER NOT NULL DEFAULT 1,
       unit_price DECIMAL(10, 2) NOT NULL,
@@ -346,15 +360,17 @@ const createTables = async () => {
   
   // Create indexes
   await query(`
-    CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)
+    CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id, createdAt)
   `);
   await query(`
-    CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)
+    CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status, createdAt)
   `);
   await query(`
-    CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)
+    CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(createdAt)
   `);
 };
+
+createTables.meth
 
 // Initialize tables on module load
 createTables().catch(console.error);
