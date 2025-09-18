@@ -1,10 +1,10 @@
-const { query } = require('../config/database');
-const bcrypt = require('bcryptjs');
+const { query } = require("../config/database");
+const bcrypt = require("bcryptjs");
 
 const initDatabase = async () => {
   try {
-    console.log('🚀 Initializing PostgreSQL database...');
-    
+    console.log("🚀 Initializing PostgreSQL database...");
+
     // Create users table
     await query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -18,8 +18,8 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Users table created');
-    
+    console.log("✅ Users table created");
+
     // Create pizzas table
     await query(`
       CREATE TABLE IF NOT EXISTS pizzas (
@@ -36,8 +36,8 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Pizzas table created');
-    
+    console.log("✅ Pizzas table created");
+
     // Create orders table
     await query(`
       CREATE TABLE IF NOT EXISTS orders (
@@ -56,8 +56,8 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Orders table created');
-    
+    console.log("✅ Orders table created");
+
     // Create order_items table
     await query(`
       CREATE TABLE IF NOT EXISTS order_items (
@@ -72,105 +72,147 @@ const initDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Order items table created');
-    
+    console.log("✅ Order items table created");
+
     // Create indexes
-    await query('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
-    await query('CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)');
-    await query('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)');
-    await query('CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)');
-    await query('CREATE INDEX IF NOT EXISTS idx_pizzas_category ON pizzas(category)');
-    await query('CREATE INDEX IF NOT EXISTS idx_pizzas_available ON pizzas(available)');
-    console.log('✅ Indexes created');
-    
+    await query("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)");
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)"
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)"
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)"
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_pizzas_category ON pizzas(category)"
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_pizzas_available ON pizzas(available)"
+    );
+    console.log("✅ Indexes created");
+
     // Seed initial data
-    console.log('🌱 Seeding initial data...');
-    
+    console.log("🌱 Seeding initial data...");
+
     // Check if admin user exists
-    const adminCheck = await query('SELECT * FROM users WHERE email = $1', ['admin@admin.com']);
+    const adminCheck = await query("SELECT * FROM users WHERE email = $1", [
+      "admin@admin.com",
+    ]);
     if (adminCheck.rows.length === 0) {
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash("password123", 10);
       await query(
-        'INSERT INTO users (name, email, address, password, role) VALUES ($1, $2, $3, $4, $5)',
-        ['Admin User', 'admin@admin.com', '123 Admin Street', hashedPassword, 'admin']
+        "INSERT INTO users (name, email, address, password, role) VALUES ($1, $2, $3, $4, $5)",
+        [
+          "Admin User",
+          "admin@admin.com",
+          "123 Admin Street",
+          hashedPassword,
+          "admin",
+        ]
       );
-      console.log('✅ Admin user created (admin@admin.com / password123)');
+      console.log("✅ Admin user created (admin@admin.com / password123)");
     }
 
     // Check if regular user exists
-    const userCheck = await query('SELECT * FROM users WHERE email = $1', ['user@user.com']);
+    const userCheck = await query("SELECT * FROM users WHERE email = $1", [
+      "user@user.com",
+    ]);
     if (userCheck.rows.length === 0) {
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash("password123", 10);
       await query(
-        'INSERT INTO users (name, email, address, password, role) VALUES ($1, $2, $3, $4, $5)',
-        ['Regular User', 'user@user.com', '456 User Avenue', hashedPassword, 'user']
+        "INSERT INTO users (name, email, address, password, role) VALUES ($1, $2, $3, $4, $5)",
+        [
+          "Regular User",
+          "user@user.com",
+          "456 User Avenue",
+          hashedPassword,
+          "user",
+        ]
       );
-      console.log('✅ Regular user created (user@user.com / password123)');
+      console.log("✅ Regular user created (user@user.com / password123)");
     }
-    
+
     // Check if pizzas exist
-    const pizzaCheck = await query('SELECT COUNT(*) FROM pizzas');
+    const pizzaCheck = await query("SELECT COUNT(*) FROM pizzas");
     if (parseInt(pizzaCheck.rows[0].count) === 0) {
-      const pizzas = [
-        {
-          name: 'Margherita',
-          ingredients: ['tomato sauce', 'mozzarella', 'basil'],
-          price: 12.99,
-          category: 'Classic',
-          veg: true,
-          description: 'Fresh tomatoes, mozzarella, basil',
-          image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002'
-        },
-        {
-          name: 'Pepperoni',
-          ingredients: ['tomato sauce', 'mozzarella', 'pepperoni'],
-          price: 14.99,
-          category: 'Classic',
-          veg: false,
-          description: 'Pepperoni, mozzarella, tomato sauce',
-          image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e'
-        },
-        {
-          name: 'Hawaiian',
-          ingredients: ['tomato sauce', 'mozzarella', 'ham', 'pineapple'],
-          price: 13.99,
-          category: 'Specialty',
-          veg: false,
-          description: 'Ham, pineapple, mozzarella',
-          image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38'
-        },
-        {
-          name: 'Vegetarian',
-          ingredients: ['tomato sauce', 'mozzarella', 'bell peppers', 'mushrooms', 'onions', 'olives'],
-          price: 13.49,
-          category: 'Vegetarian',
-          veg: true,
-          description: 'Bell peppers, mushrooms, onions, olives',
-          image: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47'
-        },
-        {
-          name: 'BBQ Chicken',
-          ingredients: ['BBQ sauce', 'mozzarella', 'grilled chicken', 'red onions'],
-          price: 15.99,
-          category: 'Specialty',
-          veg: false,
-          description: 'Grilled chicken, BBQ sauce, red onions',
-          image: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828'
-        },
-        {
-          name: 'Four Cheese',
-          ingredients: ['mozzarella', 'cheddar', 'parmesan', 'gorgonzola'],
-          price: 14.49,
-          category: 'Classic',
-          veg: true,
-          description: 'Mozzarella, cheddar, parmesan, gorgonzola',
-          image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591'
-        }
+      // Dynamic pizza seeding (40 pizzas)
+      const pizzaNames = [
+        "Margherita",
+        "Pepperoni",
+        "Hawaiian",
+        "Veggie Delight",
+        "BBQ Chicken",
+        "Spicy Paneer",
+        "Cheese Burst",
+        "Mushroom Magic",
+        "Tandoori Chicken",
+        "Farmhouse",
+        "Mexican Green Wave",
+        "Double Cheese",
+        "Chicken Sausage",
+        "Peppy Paneer",
+        "Deluxe Veggie",
+        "Peri Peri Chicken",
+        "Corn & Cheese",
+        "Italian Supreme",
+        "Classic Tomato",
+        "Smoky BBQ Veg",
       ];
-      
+      const pizzaImages = [
+        "pizza1.jpeg",
+        "pizza2.jpeg",
+        "pizza3.jpeg",
+        "pizza4.jpeg",
+      ];
+      const vegIngredients = [
+        ["Cheese", "Tomato", "Capsicum"],
+        ["Paneer", "Onion", "Peppers"],
+        ["Mushroom", "Corn", "Olives"],
+        ["Spinach", "Tomato", "Cheese"],
+        ["Jalapeno", "Cheese", "Onion"],
+      ];
+      const nonVegIngredients = [
+        ["Chicken", "Cheese", "Onion"],
+        ["Pepperoni", "Cheese", "Tomato"],
+        ["Ham", "Pineapple", "Cheese"],
+        ["Chicken Sausage", "Peppers", "Cheese"],
+        ["BBQ Chicken", "Onion", "Cheese"],
+      ];
+      function isVegPizza(name) {
+        const nonVegKeywords = ["chicken", "pepperoni"];
+        const lowerName = name.toLowerCase();
+        return !nonVegKeywords.some((keyword) => lowerName.includes(keyword));
+      }
+      const pizzas = [];
+      for (let i = 0; i < 50; i++) {
+        const baseName = pizzaNames[i % pizzaNames.length];
+        const name = baseName + " " + Math.floor(Math.random() * 1000);
+        const isVeg = isVegPizza(baseName);
+        const image =
+          pizzaImages[Math.floor(Math.random() * pizzaImages.length)];
+        const ingredients = isVeg
+          ? vegIngredients[Math.floor(Math.random() * vegIngredients.length)]
+          : nonVegIngredients[
+              Math.floor(Math.random() * nonVegIngredients.length)
+            ];
+        const price = (Math.floor(Math.random() * 400) + 100) / 10; // 10.0 to 49.9
+        const category = isVeg ? "Vegetarian" : "Non-Vegetarian";
+        const description = `${baseName} pizza with ${ingredients.join(", ")}`;
+        pizzas.push({
+          name,
+          ingredients,
+          price,
+          image,
+          veg: isVeg,
+          category,
+          description,
+        });
+      }
       for (const pizza of pizzas) {
         await query(
-          `INSERT INTO pizzas (name, ingredients, price, available, image, veg, category, description) 
+          `INSERT INTO pizzas (name, ingredients, price, available, image, veg, category, description)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [
             pizza.name,
@@ -180,17 +222,17 @@ const initDatabase = async () => {
             pizza.image,
             pizza.veg,
             pizza.category,
-            pizza.description
+            pizza.description,
           ]
         );
       }
       console.log(`✅ ${pizzas.length} pizzas added`);
     }
-    
-    console.log('🎉 Database initialization complete!');
+
+    console.log("🎉 Database initialization complete!");
     process.exit(0);
   } catch (error) {
-    console.error('❌ Database initialization failed:', error);
+    console.error("❌ Database initialization failed:", error);
     process.exit(1);
   }
 };

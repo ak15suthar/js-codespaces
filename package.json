@@ -11,7 +11,6 @@
     "dev:frontend:wait": "node scripts/wait-for-backend.js && npm run dev:frontend",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "db:init": "cd backend && npm run db:init",
-    "db:seed": "cd backend && npm run migrate",
     "test": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
     "build": "cd frontend && npm run build",
